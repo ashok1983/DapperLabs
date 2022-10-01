@@ -1,0 +1,86 @@
+// used postgre docker container for running the application 
+// Follow below command to run the posgres container and create database mytestdb. 
+// create database mytestdb manually 
+// Then run application 
+// go run main.go 
+
+Run docker container 
+ 1. docker run -d -p 5432:5432 --name my-postgres -e POSTGRES_PASSWORD=dapper@123 postgres
+ 2. docker ps -a
+CONTAINER ID   IMAGE      COMMAND                  CREATED         STATUS         PORTS                    NAMES
+c7c9f11aa09e   postgres   "docker-entrypoint.s…"   4 minutes ago   Up 4 minutes   0.0.0.0:5432->5432/tcp   my-postgres
+MVW-C02G6573ML85:DapperLab achawan$ 
+
+Create Database for postgres. 
+1. login to container 
+    $ docker exec -it c7c9f11aa09e bash 
+
+2. Login to postgres database
+$ psql -U postgres
+psql (14.5 (Debian 14.5-1.pgdg110+1))
+Type "help" for help.
+
+3. List database 
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+-----------+----------+----------+------------+------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(3 rows)
+
+4. Create database : 
+postgres=# CREATE DATABASE mytestdb;
+CREATE DATABASE
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+-----------+----------+----------+------------+------------+-----------------------
+ mytestdb  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(4 rows)
+
+5. Connect to database 
+postgres=# \c mytestdb
+
+6. Now Run the application 
+To build : 
+go build main.go 
+./main 
+
+1. Crate User  
+curl --location --request POST 'http://0.0.0.0:8080/signup' \
+--header 'Content-Type: text/plain' \
+--data-raw '{
+  "email": "test1123@axiomzen.com",
+  "password": "test1123",
+  "firstName": "Alex1133",
+  "lastName": "Zimmerman1133"
+}'
+
+2. Login 
+curl --location --request POST 'http://0.0.0.0:8080/login' \
+--header 'Content-Type: text/plain' \
+--data-raw '{
+  "email": "test1123@axiomzen.com",
+  "password": "test1123"
+}'
+
+3. Get user
+curl --location --request GET 'http://0.0.0.0:8080/users' \
+--header 'x-authentication-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+
+4. PUT User 
+curl --location --request PUT 'http://0.0.0.0:8080/users' \
+--header 'Content-Type: text/plain' \
+--data-raw '{
+  "firstName": "abc11",
+  "lastName": "xyz11"
+}'
